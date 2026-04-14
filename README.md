@@ -31,3 +31,18 @@ Dưới đây là sơ đồ trực quan về cách các file, lớp (class), và
    Mở terminal và chạy lệnh sau:
    ```bash
    pip install fastapi uvicorn playwright pymupdf requests python-multipart pydantic
+
+3. **Cài đặt trình duyệt cho Playwright:
+   ```bash
+   playwright install chromium
+
+4. **Chuẩn bị API Key: Nhận API Key từ nền tảng ckey.vn (hoặc API Key tương tự, trong project mình đang dùng model của gemini, mọi người có thể sửa lại trong file main.py nhé!)
+
+## 🚀 Cách chạy chương trình
+
+1. **Khởi động Backend Server (tại thư mục gốc của dự án):
+   ```bash
+   uvicorn main:app --reload
+
+2. **Mở file index.html bằng trình duyệt web bất kỳ.
+3. Tải lên file CV (định dạng PDF), nhập API Key, chọn số lượng Job và bấm Bắt đầu săn việc.
