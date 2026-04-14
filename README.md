@@ -1,48 +1,33 @@
-AI Job Hunter (One-Click) - English Version
-AI Job Hunter is an autonomous AI Agent that completely automates the job searching and matching process. With just one click and your resume (CV), the system analyzes your skills, searches for the most relevant jobs on TopCV, and uses AI to evaluate how well you match each Job Description (JD).
+# 🚀 AI Job Hunter (One-Click)
 
-Key Features
-🧠 Smart CV Parsing: Automatically reads PDF resumes to extract skills, calculate years of experience, and deduce the most suitable "Target Job Title".
+AI Job Hunter là một Hệ thống Đại lý AI (AI Agent) tự động hóa hoàn toàn quy trình tìm kiếm và ứng tuyển việc làm. Chỉ với một cú click chuột và file CV của bạn, hệ thống sẽ tự động phân tích kỹ năng, tìm kiếm các công việc phù hợp nhất trên TopCV, và dùng AI để chấm điểm mức độ khớp của bạn với từng bản mô tả công việc (JD).
 
-🕷️ Stealth Web Scraping: Automatically scrapes the latest job postings from TopCV. Integrated with human-like behavior emulation (User-Agent, Slow-mo) to bypass Anti-Bot/Cloudflare systems.
+## ✨ Tính năng nổi bật
 
-📊 AI-Powered Evaluation: Uses the gemini-2.5-flash model to cross-reference your CV against scraped JDs, providing a match score (0-100), Pros, Cons, and actionable application advice.
+* **🧠 Tự động đọc CV (Smart CV Parsing):** Trích xuất thông tin, số năm kinh nghiệm và tự động kết luận "Chức danh mục tiêu" (Target Job Title) từ file PDF.
+* **🕷️ Web Scraping thông minh:** Tự động cào dữ liệu các công việc mới nhất từ TopCV. Được tích hợp cơ chế mô phỏng người dùng thật (User-Agent, Slow-mo) để vượt qua các hệ thống Anti-Bot/Cloudflare.
+* **📊 Chấm điểm bằng AI (AI Evaluation):** Sử dụng model `gemini-2.5-flash` để đối chiếu CV với JD, đưa ra thang điểm (0-100), phân tích Điểm mạnh (Pros), Điểm yếu (Cons) và Lời khuyên ứng tuyển.
+* **🎮 Trải nghiệm người dùng:** Tích hợp Mini-game (Flappy Bird) giúp người dùng giải trí trong lúc chờ AI xử lý dữ liệu. Cơ chế Polling kết quả mượt mà.
 
-🎮 Interactive UX: Features an integrated Mini-game (Flappy Bird) to keep users entertained while the AI processes data in the background, utilizing smooth asynchronous polling.
+## 🏗️ Kiến trúc Dự án (Core Structure)
 
-🏗️ Project Architecture (Core Structure)
-Below is a visual representation of how files, classes, and methods interact within the system to execute the 'One-Click' workflow:
+Dưới đây là sơ đồ trực quan về cách các file, lớp (class), và phương thức (function) trong hệ thống tương tác với nhau để hoàn thành quy trình 'One-Click':
 
-(This diagram illustrates the flow from CV upload and parsing, to job search, final AI evaluation, and result delivery.)
+![Core Structure](core_structure.png)
 
-🛠️ Tech Stack
-Backend: Python, FastAPI, Uvicorn
+*(Sơ đồ minh họa luồng từ khi tải CV lên, trích xuất dữ liệu, tìm kiếm job, cho đến khi AI chấm điểm xong và trả kết quả.)*
 
-Web Scraping: Playwright
+## 🛠️ Công nghệ sử dụng
 
-AI & NLP: Gemini 2.5 Flash (via ckey.vn API), PyMuPDF (PDF processing)
+* **Backend:** Python, FastAPI, Uvicorn
+* **Web Scraping:** Playwright
+* **AI & NLP:** Gemini 2.5 Flash (via ckey.vn API), PyMuPDF (đọc PDF)
+* **Frontend:** HTML5, JavaScript (Vanilla), Tailwind CSS
 
-Frontend: HTML5, JavaScript (Vanilla), Tailwind CSS
+## ⚙️ Hướng dẫn cài đặt
 
-⚙️ Installation & Setup
-Prerequisites: Python 3.8+ installed on your machine.
-
-Install dependencies:
-Open your terminal and run:
-
-Bash
-pip install fastapi uvicorn playwright pymupdf requests python-multipart pydantic
-Install Playwright browsers:
-
-Bash
-playwright install chromium
-API Key: Obtain an API Key from ckey.vn (or OpenRouter) to power the core AI features.
-
-🚀 How to Run
-Start the Backend Server (from the root directory):
-
-Bash
-uvicorn main:app --reload
-Open the index.html file in any modern web browser.
-
-Upload your CV (PDF format), enter your API Key, select the desired job search limit, and click Start Hunting.
+1. **Yêu cầu hệ thống:** Có cài đặt sẵn Python 3.8+
+2. **Cài đặt các thư viện cần thiết:**
+   Mở terminal và chạy lệnh sau:
+   ```bash
+   pip install fastapi uvicorn playwright pymupdf requests python-multipart pydantic
