@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Job Hunter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background-color: #70c5ce;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-800 h-screen flex flex-col items-center py-10">
+
+    <div class="max-w-4xl w-full bg-white rounded-xl shadow-lg p-8">
+        <h1 class="text-3xl font-bold text-center text-blue-600 mb-6">🚀 AI Job Hunter (One-Click)</h1>
+
+        <div id="setup-section" class="space-y-4">
+            <div>
+                <label class="block font-semibold mb-1">Tải lên CV (PDF):</label>
+                <input type="file" id="cv-upload" accept="application/pdf" class="w-full border p-2 rounded">
+            </div>
+            <div class="mb-4">
+                <label class="block font-semibold mb-1">API Key (Từ ckey.vn hoặc OpenRouter):</label>
+                <input type="password" id="api-key" placeholder="Nhập sk-..." class="w-full border p-2 rounded">
+            </div>
+            <div>
+                <label class="block font-semibold mb-1">Số lượng Job quét tối đa (Limit):</label>
+                <input type="number" id="limit" value="5" class="w-full border p-2 rounded">
+            </div>
+            
+            <button onclick="startHunting()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded transition">
+                ⚡ BẮT ĐẦU SĂN VIỆC
+            </button>
+        </div>
+
+        <div id="loading-section" class="hidden text-center mt-6">
+            <h2 class="text-xl font-bold text-gray-700 mb-2 animate-pulse" id="loading-text">Đang phân tích CV...</h2>
+            <p class="text-sm text-gray-500 mb-4">Hệ thống đang tự động tìm chức danh phù hợp. Chơi tạm Flappy Bird nhé! (Space để nhảy)</p>
+            
+            <canvas id="gameCanvas" width="400" height="400"></canvas>
+            <p id="game-score" class="mt-2 font-bold text-lg">Điểm: 0</p>
+        </div>
+
+        <div id="result-section" class="hidden mt-6">
+            <h2 class="text-2xl font-bold text-green-600 mb-4">✅ Đã săn việc thành công! Top Job phù hợp nhất:</h2>
+            <div id="job-list" class="space-y-4">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = "http://127.0.0.1:8000/api/v1";
+        let pollingInterval;
+
+        // --- LOGIC GỌI API BACKEND ---
+        async function startHunting() {
+            const fileInput = document.getElementById('cv-upload');
+            const limit = document.getElementById('limit').value;
+            const apiKey = document.getElementById('api-key').value;
+
+            // Validate
+            if (!fileInput.files[0]) {
+                alert("Vui lòng tải lên file CV!");
+                return;
+            }
+            if (!apiKey || apiKey.trim() === "") {
+                alert("Vui lòng nhập API Key để AI hoạt động!");
+                return;
+            }
+
+            // Đổi UI sang màn hình Loading
+            document.getElementById('setup-section').classList.add('hidden');
+            document.getElementById('loading-section').classList.remove('hidden');
+            startGame(); // Khởi động game
+
+            try {
+                // 1. Upload CV
+                document.getElementById('loading-text').innerText = "1. AI đang đọc CV để chốt chức danh...";
+                const formData = new FormData();
+                formData.append("file", fileInput.files[0]);
+                await fetch(`${API_BASE}/analyze-cv`, { method: "POST", body: formData });
+
+                // 2. Kích hoạt bot cào và chấm điểm
+                document.getElementById('loading-text').innerText = `2. Đang tung Bot đi cào tối đa ${limit} Job & Chấm điểm...`;
+                
+                await fetch(`${API_BASE}/start-hunting`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        limit: parseInt(limit),
+                        api_key: apiKey 
+                    })
+                });
+
+                // 3. Polling (Kiểm tra kết quả mỗi 5 giây)
+                pollingInterval = setInterval(checkResults, 5000);
+
+            } catch (error) {
+                alert("Lỗi kết nối đến Server Backend! Hãy chắc chắn uvicorn đang chạy.");
+                console.error(error);
+                document.getElementById('setup-section').classList.remove('hidden');
+                document.getElementById('loading-section').classList.add('hidden');
+                stopGame();
+            }
+        }
+
+        async function checkResults() {
+            try {
+                const response = await fetch(`${API_BASE}/results`);
+                const data = await response.json();
+
+                if (data.status === "done" && data.data.length > 0) {
+                    clearInterval(pollingInterval); 
+                    stopGame(); 
+                    showResults(data.data);
+                }
+            } catch (error) {
+                console.error("Đang chờ file kết quả...", error);
+            }
+        }
+
+        function showResults(jobs) {
+            document.getElementById('loading-section').classList.add('hidden');
+            document.getElementById('result-section').classList.remove('hidden');
+            
+            const list = document.getElementById('job-list');
+            list.innerHTML = ""; 
+
+            jobs.forEach(job => {
+                list.innerHTML += `
+                    <div class="border-l-4 border-blue-500 bg-blue-50 p-4 rounded shadow-sm">
+                        <div class="flex justify-between items-center border-b pb-2 mb-2">
+                            <h3 class="text-xl font-bold text-gray-800">${job.job_title}</h3>
+                            <span class="bg-green-500 text-white px-3 py-1 rounded-full font-bold">Điểm: ${job.match_score}/100</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <strong class="text-green-600">✅ Điểm mạnh:</strong>
+                                <ul class="list-disc pl-5">${job.pros.map(p => `<li>${p}</li>`).join('')}</ul>
+                            </div>
+                            <div>
+                                <strong class="text-red-600">⚠️ Điểm yếu:</strong>
+                                <ul class="list-disc pl-5">${job.cons.map(c => `<li>${c}</li>`).join('')}</ul>
+                            </div>
+                        </div>
+                        <p class="mt-3 text-gray-700 italic">💡 <strong>AI Khuyên:</strong> ${job.recommendation}</p>
+                        ${job.url ? `<a href="${job.url}" target="_blank" class="inline-block mt-3 bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">🔗 Ứng tuyển ngay</a>` : ''}
+                    </div>
+                `;
+            });
+        }
+
+        // --- MINI GAME FLAPPY BIRD ---
+        let gameLoop;
+        function startGame() {
+            const canvas = document.getElementById("gameCanvas");
+            const ctx = canvas.getContext("2d");
+            
+            let bird = { x: 50, y: 150, velocity: 0, gravity: 0.5, jump: -8, size: 20 };
+            let pipes = [];
+            let score = 0;
+            let frame = 0;
+            let isGameOver = false;
+
+            // Xóa sự kiện cũ trước khi gán mới (tránh bị lặp nhảy nhanh)
+            const handleKeyDown = (e) => { if (e.code === "Space") bird.velocity = bird.jump; };
+            const handleMouseDown = () => { bird.velocity = bird.jump; };
+            
+            document.removeEventListener("keydown", handleKeyDown);
+            canvas.removeEventListener("mousedown", handleMouseDown);
+            
+            document.addEventListener("keydown", handleKeyDown);
+            canvas.addEventListener("mousedown", handleMouseDown);
+
+            function draw() {
+                if (isGameOver) {
+                    ctx.fillStyle = "black";
+                    ctx.font = "20px Arial";
+                    ctx.fillText("Game Over! Click để chơi lại", 80, 200);
+                    canvas.onclick = () => { isGameOver = false; startGame(); canvas.onclick = null; };
+                    return;
+                }
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                bird.velocity += bird.gravity;
+                bird.y += bird.velocity;
+                ctx.fillStyle = "yellow";
+                ctx.beginPath();
+                ctx.arc(bird.x, bird.y, bird.size, 0, Math.PI * 2);
+                ctx.fill();
+
+                if (frame % 90 === 0) {
+                    let gap = 120;
+                    let topHeight = Math.random() * (canvas.height - gap - 50) + 20;
+                    pipes.push({ x: canvas.width, top: topHeight, bottom: topHeight + gap, width: 40 });
+                }
+
+                ctx.fillStyle = "green";
+                for (let i = 0; i < pipes.length; i++) {
+                    let p = pipes[i];
+                    p.x -= 3;
+                    ctx.fillRect(p.x, 0, p.width, p.top);
+                    ctx.fillRect(p.x, p.bottom, p.width, canvas.height - p.bottom);
+
+                    if (bird.x + bird.size > p.x && bird.x - bird.size < p.x + p.width &&
+                        (bird.y - bird.size < p.top || bird.y + bird.size > p.bottom)) {
+                        isGameOver = true;
+                    }
+                    if (bird.y + bird.size >= canvas.height || bird.y - bird.size <= 0) isGameOver = true;
+
+                    if (p.x === bird.x) {
+                        score++;
+                        document.getElementById("game-score").innerText = "Điểm: " + score;
+                    }
+                }
+                pipes = pipes.filter(p => p.x + p.width > 0);
+                frame++;
+                gameLoop = requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        function stopGame() {
+            cancelAnimationFrame(gameLoop);
+        }
+    </script>
+</body>
+</html>

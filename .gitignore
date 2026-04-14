@@ -1,0 +1,11 @@
+# Thư mục chứa dữ liệu cá nhân và kết quả chạy
+data/
+
+# Rác của Python
+__pycache__/
+*.pyc
+
+# Thư mục môi trường ảo (nếu có để trong này)
+venv/
+env/
+.env
