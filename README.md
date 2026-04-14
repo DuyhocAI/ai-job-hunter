@@ -46,3 +46,5 @@ Dưới đây là sơ đồ trực quan về cách các file, lớp (class), và
 
 2. **Mở file index.html bằng trình duyệt web bất kỳ.
 3. Tải lên file CV (định dạng PDF), nhập API Key, chọn số lượng Job và bấm Bắt đầu săn việc.
+
+### Lưu ý: Công cụ này phục vụ mục đích tự động hóa và học tập. Vui lòng không lạm dụng để spam máy chủ của các trang tuyển dụng.
